@@ -1,42 +1,56 @@
-from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow, QLabel,QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QFrame)
-from PyQt5.QtGui import (QFont, QPixmap)
-from PyQt5.QtCore import (Qt, QTimer, QPoint)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QWidget,
+    QMainWindow,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QMessageBox,
+    QFrame,
+)
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtCore import Qt, QTimer, QPoint
 import sys
 import sqlite3
 import hashlib
 import random
 
-DB_PATH = "pong/users.db"
+DB_PATH = "captcha/users.db"
 
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
             password TEXT NOT NULL
         )
-    """)
+    """
+    )
     conn.commit()
     return conn
 
 
-def hash_password(password: str) -> str:
+def hash_password(password: str):
     return hashlib.md5(password.encode()).hexdigest()
 
 
-def create_user(conn, username, password) -> bool:
+def create_user(conn, username, password):
     try:
-        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)",
-                     (username, hash_password(password)))
+        conn.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (username, hash_password(password)),
+        )
         conn.commit()
         return True
     except sqlite3.IntegrityError:
         return False
 
 
-def verify_user(conn, username, password) -> bool:
+def verify_user(conn, username, password):
     cur = conn.cursor()
     cur.execute("SELECT password FROM users WHERE username=?", (username,))
     row = cur.fetchone()
@@ -49,7 +63,11 @@ class DraggableLabel(QLabel):
     def __init__(self, name, image_path, parent=None):
         super().__init__(parent)
         self.name = name
-        self.setPixmap(QPixmap(image_path).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.setPixmap(
+            QPixmap(image_path).scaled(
+                100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+        )
         self.setFixedSize(100, 100)
         self.setStyleSheet("border: 1px solid gray; background: white;")
         self.setAlignment(Qt.AlignCenter)
@@ -83,13 +101,15 @@ class CaptchaWindow(QWidget):
         self.area_size = 200
         self.play_area = QFrame(self)
         self.play_area.setGeometry(400, 100, self.area_size, self.area_size)
-        self.play_area.setStyleSheet("background-color: white; border: 3px dashed #888;")
+        self.play_area.setStyleSheet(
+            "background-color: white; border: 3px dashed #888;"
+        )
 
         self.labels = {
-            "piece1": DraggableLabel("piece1", "pong/captcha/1.png", self),
-            "piece2": DraggableLabel("piece2", "pong/captcha/2.png", self),
-            "piece3": DraggableLabel("piece3", "pong/captcha/3.png", self),
-            "piece4": DraggableLabel("piece4", "pong/captcha/4.png", self)
+            "piece1": DraggableLabel("piece1", "captcha/1.png", self),
+            "piece2": DraggableLabel("piece2", "captcha/2.png", self),
+            "piece3": DraggableLabel("piece3", "captcha/3.png", self),
+            "piece4": DraggableLabel("piece4", "captcha/4.png", self),
         }
 
         self.target_positions = {
@@ -121,7 +141,9 @@ class CaptchaWindow(QWidget):
                 correct = False
                 break
         if correct:
-            QMessageBox.information(self, "Успех", "Картинка собрана правильно!")
+            QMessageBox.information(
+                self, "Успех", "Картинка собрана правильно!"
+            )
             self.close()
             self.callback()
 
@@ -160,7 +182,9 @@ class AuthWindow(QWidget):
             self.main.setGeometry(0, 50, 1900, 950)
             self.close()
         else:
-            QMessageBox.warning(self, "Ошибка", "Неверный логин или пароль.\nПройдите капчу!")
+            QMessageBox.warning(
+                self, "Ошибка", "Неверный логин или пароль.\nПройдите капчу!"
+            )
             self.captcha = CaptchaWindow(self.enable_login)
             self.captcha.show()
             self.login_btn.setEnabled(False)
@@ -172,9 +196,13 @@ class AuthWindow(QWidget):
         username = self.username_edit.text().strip()
         password = self.password_edit.text().strip()
         if create_user(self.conn, username, password):
-            QMessageBox.information(self, "Успех", "Пользователь зарегистрирован")
+            QMessageBox.information(
+                self, "Успех", "Пользователь зарегистрирован"
+            )
         else:
-            QMessageBox.warning(self, "Ошибка", "Такой пользователь уже существует")
+            QMessageBox.warning(
+                self, "Ошибка", "Такой пользователь уже существует"
+            )
 
 
 class MainWindow(QMainWindow):
@@ -204,13 +232,13 @@ class MainWindow(QMainWindow):
         self.first_score.setText("0")
         self.first_score.setStyleSheet("color: white")
         self.first_score.setFont(QFont("Times", 100))
-        self.first_score.setGeometry(700, 50, 150, 150)
+        self.first_score.setGeometry(700, 50, 200, 150)
 
         self.second_score = QLabel(widget)
         self.second_score.setText("0")
         self.second_score.setStyleSheet("color: white")
         self.second_score.setFont(QFont("Times", 100))
-        self.second_score.setGeometry(1100, 50, 150, 150)
+        self.second_score.setGeometry(1100, 50, 200, 150)
 
         self.first_player = QLabel(widget)
         self.first_player.setStyleSheet("background-color: white")
@@ -257,16 +285,16 @@ class MainWindow(QMainWindow):
 
         if Qt.Key_W in self.pressed_keys:
             if fy > 0:
-                self.first_player.move(5, fy-15)
+                self.first_player.move(5, fy - 15)
         if Qt.Key_S in self.pressed_keys:
             if fy < 800:
-                self.first_player.move(5, fy+15)
+                self.first_player.move(5, fy + 15)
         if Qt.Key_Up in self.pressed_keys:
             if sy > 0:
-                self.second_player.move(1880, sy-15)
+                self.second_player.move(1880, sy - 15)
         if Qt.Key_Down in self.pressed_keys:
             if sy < 800:
-                self.second_player.move(1880, sy+15)
+                self.second_player.move(1880, sy + 15)
 
     def move_ball(self):
         bx, by = self.ball.x(), self.ball.y()
@@ -296,11 +324,19 @@ class MainWindow(QMainWindow):
         else:
             self.ball.move(bx, by)
 
-        if int(self.first_score.text()) >= 10 or int(self.second_score.text()) >= 10:
+        if (
+            int(self.first_score.text()) >= 10
+            or int(self.second_score.text()) >= 10
+        ):
             self.timer.stop()
-            winner = "Первый игрок" if int(self.first_score.text()) >= 10 else "Второй игрок"
-            QMessageBox.information(self, "Матч завершён", f"{winner} победил!")
-
+            winner = (
+                "Первый игрок"
+                if int(self.first_score.text()) >= 10
+                else "Второй игрок"
+            )
+            QMessageBox.information(
+                self, "Матч завершён", f"{winner} победил!"
+            )
 
 
 if __name__ == "__main__":
