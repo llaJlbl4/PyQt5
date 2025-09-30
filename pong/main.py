@@ -16,7 +16,7 @@ import sqlite3
 import hashlib
 import random
 
-DB_PATH = "captcha/users.db"
+DB_PATH = "users.db"
 
 
 def init_db():
@@ -345,3 +345,4 @@ if __name__ == "__main__":
     auth = AuthWindow(conn)
     auth.show()
     app.exec()
+
